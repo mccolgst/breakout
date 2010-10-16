@@ -1,4 +1,5 @@
 import pygame, sys, pygame.time
+import math
 from pygame.locals import *
 
 DIRECTIONS = {'none': -1, 'left':0, 'right': 1, 'down' : 2, 'up':3, 'downleft':4, 'downright':5, 'upleft':6, 'upright':7}
@@ -36,7 +37,7 @@ class Player(object):
 		pygame.draw.rect(screen, (255,0,0), self.rect)
 
 class Block(object):
-	def __init__(self, x, y):
+	def __init__(self, x, y): #todo:blocks shoud have 'hit points'
 		self.x = x
 		self.y = y
 		self.width = 75
@@ -47,40 +48,77 @@ class Block(object):
 		pygame.draw.rect(screen, (255,0,0), self.rect)
 
 class Ball(object):
-	def __init__(self):
+	def __init__(self, vector):
 		self.x = background.get_width()/2 - 50
 		self.y = 150
 		self.width = 20
 		self.height = 20
-		self.dx = BALLSPEED
-		self.dy = BALLSPEED
 		self.direction = DIRECTIONS['downright']
 		self.rect = pygame.rect.Rect(self.x, self.y, self.width, self.height)
+		self.vector = vector
+		self.angle = vector[0]
 
-	def update(self):
+	def update(self): #todo:kinda ugly
+		self.vector = (self.angle, BALLSPEED)
+		newpos = self.calcnewpos(self.rect, self.vector)
+		self.rect = newpos
+		(self.angle, z) = self.vector
 		if self.rect.x >= background.get_width() - self.width:
-			self.change_direction('x')
+			self.angle = math.pi - self.angle
 		elif self.rect.x <= 0:
-			self.change_direction('x')
-#		if self.rect.y >= background.get_height() - self.height:
-#			self.change_direction('y')
+			self.angle = math.pi - self.angle
 		elif self.rect.y <= 0:
-			self.change_direction('y')
-		self.rect.x += self.dx
-		self.rect.y += self.dy
+			self.angle = - self.angle
+		self.vector = (self.angle, z)
 		pygame.draw.rect(screen, (255,0,0), self.rect)
 
-	def change_direction(self, coord):
-		if coord == 'x':
-			self.dx = self.dx * -1
-		elif coord == 'y':
-			self.dy = self.dy * -1
+	def calcnewpos(self, rect, vector):
+		(angle, z) = vector
+		(dx, dy) = (z*math.cos(angle), z*math.sin(angle))
+		return rect.move(dx * 4, dy * 4)
 
-'''class Game():
+
+class Game():
 	def __init__(self):
 		self.player = Player()
-		self.keyboard = 
-'''
+		self.keyboard = Keyboard(self.player)
+		self.blocks = self.make_blocks()
+		self.ball = Ball((0.47, BALLSPEED))
+		self.updateables = [self.player, self.ball]
+
+	def make_blocks(self): #todo: read level from file
+		blocks = []
+		x = 50
+		for e in range(4):
+			blocks.append(Block(x, 40))
+			x += 100
+
+		return blocks
+
+	def update(self):
+		keepGoing = True
+		keepGoing =	self.keyboard.handle_input()
+		for u in self.updateables:
+			u.update()
+
+		for b in self.blocks:
+			b.update()
+			if self.ball.rect.colliderect(b.rect):
+				self.ball.angle = - self.ball.angle
+				#self.ball.change_direction('y')
+				self.blocks.pop(self.blocks.index(b))
+
+		if self.player.rect.colliderect(self.ball.rect):
+			print "COLLIDE"
+			self.ball.angle = - self.ball.angle
+			#self.ball.change_direction('y')
+
+		if len(self.blocks) == 0: #won
+			keepGoing = False
+		if self.ball.rect.y >= background.get_height() - self.ball.height: #lost
+			keepGoing = False
+		return keepGoing
+
 
 
 class Keyboard(object):
@@ -104,43 +142,19 @@ class Keyboard(object):
 					self.player.move = DIRECTIONS['left']
 
 			if event.type == KEYUP:
-				self.player.move = 2 #todo: fix
+				self.player.move = DIRECTIONS['none']
+
 		return True
 
-def make_blocks(): #todo: put in game class
-	blocks = []
-	x = 50
-	for e in range(3):
-		blocks.append(Block(x, 40))
-		x += 100
-
-	return blocks
 
 def main():
 	c = pygame.time.Clock()
-	p = Player()
-	k = Keyboard(p)
-	b = Ball()
-#	bl = Block()
-#	blocks = [bl]
-	blocks = make_blocks()
-	updateables = [p, b]
-	while k.handle_input():
+	g = Game()
+	keepGoing = True
+	while keepGoing:
 		c.tick(100)
 		screen.blit(background, (0, 0))
-		for u in updateables:
-			u.update()
-		if len(blocks) == 0: #won
-			return
-		if b.rect.y >= background.get_height() - b.height: #lost
-			return
-		for block in blocks:
-			block.update()
-			if b.rect.colliderect(block.rect):
-				b.change_direction('y')
-				blocks.pop(blocks.index(block))
-		if p.rect.colliderect(b.rect):
-			b.change_direction('y')
+		keepGoing = g.update()
 		pygame.display.flip()
 
 if __name__ == '__main__':
