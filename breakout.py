@@ -1,9 +1,9 @@
-import pygame, sys, pygame.time
+import pygame, sys, pygame.time, os
 from pygame.locals import *
 
 DIRECTIONS = {'none': -1, 'left':0, 'right': 1, 'down' : 2, 'up':3, 'downleft':4, 'downright':5, 'upleft':6, 'upright':7}
 MOVESPEED = 4
-BALLSPEED = 1
+BALLSPEED = 3
 
 pygame.init()
 screen = pygame.display.set_mode((460, 460), 0, 32)
@@ -80,18 +80,26 @@ class Game():
     def __init__(self):
         self.player = Player()
         self.keyboard = Keyboard(self.player)
-        self.blocks = self.make_blocks(self.load_level())
+        self.current_level = 0
+        self.blocks = self.make_blocks(self.load_level(self.current_level))
         self.ball = Ball()
         self.updateables = [self.player, self.ball]
+        self.levels = self.all_levels()
 
     def all_levels(self):
         levels = [f for f in os.listdir('.') if f[-3:] == 'lvl']
-		return levels
+        return levels
 
     def load_level(self, level = 0):
         f = open('level'+str(level)+'.lvl')
         leveldata = [l.rstrip().split(',') for l in f.readlines()]
         return leveldata
+
+    def next_level(self):
+        del self.blocks[:]
+		#todo: mid level transition text perhaps? (need to learn about scene transitions)
+        self.blocks = self.make_blocks(self.load_level(self.current_level))
+		
 
     def make_blocks(self, leveldata): 
         blocks = []
@@ -120,8 +128,14 @@ class Game():
         if self.player.rect.colliderect(self.ball.rect):
             self.ball.change_direction('y')
 
-        if len(self.blocks) == 0: #won
-            keepGoing = False
+        if len(self.blocks) == 0: #won (this level)
+            self.current_level += 1
+            print self.current_level
+            print self.levels
+            if self.current_level >= len(self.levels):
+                keepGoing = False
+            else:
+                self.next_level()
         if self.ball.rect.y >= background.get_height() - self.ball.height: #lost
             keepGoing = False
         return keepGoing
