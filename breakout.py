@@ -1,6 +1,14 @@
 import pygame, sys, pygame.time, os
 from pygame.locals import *
 
+#todo: block hitpoints (added, but found riquochet issue)
+#powerups (multiple ball? lazers?)
+#fix riquochet so that it's realistic:
+# -if the ball bounces on the right part of the rect, it should bounce towards left
+# -if the ball bounces on the left, it should bounce right, etc
+# if the ball hits soomething on the side of a block or player, it will riquchet inside the block or player, this needs to be fixed
+
+
 DIRECTIONS = {'none': -1, 'left':0, 'right': 1, 'down' : 2, 'up':3, 'downleft':4, 'downright':5, 'upleft':6, 'upright':7}
 MOVESPEED = 4
 BALLSPEED = 2
@@ -36,15 +44,26 @@ class Player(object):
 		pygame.draw.rect(screen, (255,0,0), self.rect)
 
 class Block(object):
-	def __init__(self, x, y):
+	def __init__(self, x, y, hitpoints):
 		self.x = x
 		self.y = y
 		self.width = 55
 		self.height = 15
 		self.rect = pygame.rect.Rect(self.x, self.y, self.width, self.height)
+		self.hitpoints = hitpoints
 
 	def update(self):
-		pygame.draw.rect(screen, (255,0,0), self.rect)
+		if self.hitpoints % 2 == 0:
+			self.color = (0,255,0)
+		elif self.hitpoints % 3 == 0:
+			self.color = (0,0,255)
+		else:
+			self.color = (255,0,0)
+		pygame.draw.rect(screen, self.color, self.rect)
+
+	def hit(self):
+		self.hitpoints = self.hitpoints - 1
+		return self.hitpoints
 
 class Ball(object):
 	def __init__(self):
@@ -131,8 +150,8 @@ class Game():
 		for line in leveldata:
 			x = 50
 			for b in line:
-				if int(b) == 1:
-					blocks.append(Block(x, y))
+				if int(b) != 0:
+					blocks.append(Block(x, y, int(b)))
 				x += 70
 			y += 25
 		return blocks
@@ -143,11 +162,14 @@ class Game():
 		for u in self.updateables:
 			u.update()
 
-		for b in self.blocks:
+		for b in self.blocks: #use collidedict, collidepoint
 			b.update()
 			if self.ball.rect.colliderect(b.rect):
+				#this looks weird and needs to be fixed
 				self.ball.change_direction('y')
-				self.blocks.pop(self.blocks.index(b))
+				self.ball.change_direction('x')
+				if b.hit() <= 0:
+					self.blocks.pop(self.blocks.index(b))
 
 		if self.player.rect.colliderect(self.ball.rect):
 			self.ball.change_direction('y')
