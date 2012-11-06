@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import pygame, sys, pygame.time, os
 from pygame.locals import *
 
@@ -11,7 +12,7 @@ from pygame.locals import *
 
 DIRECTIONS = {'none': -1, 'left':0, 'right': 1, 'down' : 2, 'up':3, 'downleft':4, 'downright':5, 'upleft':6, 'upright':7}
 MOVESPEED = 4
-BALLSPEED = 2
+BALLSPEED = 4
 
 pygame.init()
 screen = pygame.display.set_mode((460, 460), 0, 32)
