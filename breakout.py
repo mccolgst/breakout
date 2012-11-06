@@ -2,17 +2,19 @@
 import pygame, sys, pygame.time, os
 from pygame.locals import *
 
-#todo: block hitpoints (added, but found riquochet issue)
+#todo
 #powerups (multiple ball? lazers?)
-#fix riquochet so that it's realistic:
-# -if the ball bounces on the right part of the rect, it should bounce towards left
-# -if the ball bounces on the left, it should bounce right, etc
-# if the ball hits soomething on the side of a block or player, it will riquchet inside the block or player, this needs to be fixed
+#add challenge
+#fix riquochet so that it's realistic, use trig
 
 
 DIRECTIONS = {'none': -1, 'left':0, 'right': 1, 'down' : 2, 'up':3, 'downleft':4, 'downright':5, 'upleft':6, 'upright':7}
 MOVESPEED = 4
 BALLSPEED = 4
+LEVEL_TOP_MARGIN = 40
+LEVEL_LEFT_MARGIN = 50
+BLOCK_TOP_MARGIN = 25
+BLOCK_LEFT_MARGIN = 70
 
 pygame.init()
 screen = pygame.display.set_mode((460, 460), 0, 32)
@@ -147,14 +149,14 @@ class Game():
 
 	def make_blocks(self, leveldata): 
 		blocks = []
-		y = 40
+		y = LEVEL_TOP_MARGIN
 		for line in leveldata:
-			x = 50
+			x = LEVEL_LEFT_MARGIN
 			for b in line:
 				if int(b) != 0:
 					blocks.append(Block(x, y, int(b)))
-				x += 70
-			y += 25
+				x += BLOCK_LEFT_MARGIN
+			y += BLOCK_TOP_MARGIN
 		return blocks
 
 	def update(self):
@@ -209,7 +211,7 @@ class Keyboard(object):
 					self.ball.go = True
 
 			if event.type == KEYUP:
-				self.player.move = 2 #todo: fix
+				self.player.move = 2 #todo: fix, '2' doesn't make sense as a 'move'
 		return True
 
 def main():
