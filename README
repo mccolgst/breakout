@@ -1,8 +1,8 @@
-I challenged myself to make a breakout clone in the two hour busride from NYC to the catskills. Feel free to add upon it, I think I will.
-
+Simple Breakout clone with python2.7 and pygame
+Special thanks to http://www.widgetworx.com/widgetworx/portfolio/spritelib.html for the sprites!
 
 Press Space to start!!!
 
 REQUIREMENTS: 
-python (http://python.org)
+python 2.7 (http://python.org)
 pygame (http://pygame.org)
