@@ -7,12 +7,12 @@ def generate_level():
 	'''
 		generate the next level randomly
 	'''
-	fileslist = os.listdir('.')
+	fileslist = os.listdir('levels')
 	#filter the list to levels 
 	#TODO: make regex OR put levels in their own database/folder
 	level_list = [x for x in fileslist if '.lvl' in x] 
 	level_index = len(level_list) #index of the new level to make
-	of = open('level%s.lvl' %level_index, 'w')
+	of = open('levels/level%s.lvl' %level_index, 'w')
 
 	#could convert to list comp
 	for y in range(MAX_HEIGHT):
